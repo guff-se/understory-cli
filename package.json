@@ -1,0 +1,32 @@
+{
+  "name": "understory-cli",
+  "version": "1.0.0",
+  "description": "CLI for the Understory ticket service, optimized for AI agent use",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "understory": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "understory": "node dist/index.js",
+    "test": "vitest run",
+    "test:unit": "vitest run --exclude '**/integration.test.ts'",
+    "test:integration": "vitest run --only '**/integration.test.ts'"
+  },
+  "keywords": ["understory", "cli", "tickets", "booking"],
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.6"
+  }
+}
