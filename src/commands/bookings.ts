@@ -67,4 +67,55 @@ export function registerBookingsCommand(
       );
       writeOutput(data, getOutputOptions());
     });
+
+  book
+    .command("for-date <date>")
+    .description(
+      "List bookings for events on a specific date (excludes CANCELLED). Date: YYYY-MM-DD (e.g. 2026-02-18)"
+    )
+    .action(async (dateStr: string) => {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+      if (!match) {
+        throw new Error("Invalid date. Use YYYY-MM-DD (e.g. 2026-02-18)");
+      }
+      const from = `${dateStr}T00:00:00Z`;
+      const toDate = new Date(
+        parseInt(match[1], 10),
+        parseInt(match[2], 10) - 1,
+        parseInt(match[3], 10) + 1
+      );
+      const to = toDate.toISOString().slice(0, 19) + "Z";
+
+      const eventIds = new Set<string>();
+      let cursor: string | undefined;
+
+      do {
+        const data = await apiGet<{ next?: string; items: Array<{ id: string }> }>(
+          "/v1/events",
+          { params: { from, to, limit: 100, cursor } }
+        );
+        for (const e of data.items ?? []) eventIds.add(e.id);
+        cursor = data.next;
+      } while (cursor);
+
+      const items: unknown[] = [];
+      let bookingCursor: string | undefined;
+
+      do {
+        const res = await apiGet<{ next?: string; items: unknown[] }>(
+          "/v1/bookings",
+          { params: { limit: 100, cursor: bookingCursor } }
+        );
+
+        for (const b of res.items ?? []) {
+          const row = b as { event_id: string; status: string };
+          if (eventIds.has(row.event_id) && row.status !== "CANCELLED") {
+            items.push(b);
+          }
+        }
+        bookingCursor = res.next;
+      } while (bookingCursor);
+
+      writeOutput({ items, date: dateStr }, getOutputOptions());
+    });
 }

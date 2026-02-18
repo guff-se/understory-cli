@@ -17,9 +17,14 @@ Command-line interface for the [Understory](https://understory.io) ticket servic
    ```
    Get credentials from [Understory Backoffice](https://backoffice.understory.io) > Company settings > Integrations.
 
-3. **Verify**
+3. **Install globally** (makes the `understory` command available)
    ```bash
-   node dist/index.js me
+   npm link
+   ```
+
+4. **Verify**
+   ```bash
+   understory me
    ```
 
 ## Usage

@@ -19,6 +19,7 @@ import { registerAvailabilityCommand } from "./commands/availability.js";
 import { registerBookingsCommand } from "./commands/bookings.js";
 import { registerOrdersCommand } from "./commands/orders.js";
 import { registerMarketingCommand } from "./commands/marketing.js";
+import { registerStatsCommand } from "./commands/stats.js";
 
 const program = new Command();
 
@@ -47,6 +48,7 @@ registerAvailabilityCommand(program, getOutputOptions);
 registerBookingsCommand(program, getOutputOptions);
 registerOrdersCommand(program, getOutputOptions);
 registerMarketingCommand(program, getOutputOptions);
+registerStatsCommand(program, getOutputOptions);
 
 async function main(): Promise<number> {
   try {
