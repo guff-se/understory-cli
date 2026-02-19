@@ -5,6 +5,7 @@
 
 import { Command } from "commander";
 import { apiGet } from "../client.js";
+import { normalizeDatetimeForApi } from "../datetime.js";
 import { writeOutput, type OutputOptions } from "../output.js";
 
 export function registerEventsCommand(
@@ -30,16 +31,16 @@ export function registerEventsCommand(
     .option("-c, --cursor <cursor>", "Pagination cursor")
     .option("-l, --limit <n>", "Max events to return (default 100)", "100")
     .action(async (opts) => {
+      const params: Record<string, string | number | undefined> = {
+        cursor: opts.cursor,
+        limit: opts.limit,
+      };
+      if (opts.from) params.from = normalizeDatetimeForApi(opts.from);
+      if (opts.to) params.to = normalizeDatetimeForApi(opts.to);
+
       const data = await apiGet<{ next?: string; items: unknown[] }>(
         "/v1/events",
-        {
-          params: {
-            from: opts.from,
-            to: opts.to,
-            cursor: opts.cursor,
-            limit: opts.limit,
-          },
-        }
+        { params }
       );
       writeOutput(data, getOutputOptions());
     });

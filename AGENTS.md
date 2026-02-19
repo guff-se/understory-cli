@@ -8,6 +8,7 @@ CLI for the Understory ticket service. Optimized for AI agents: structured JSON 
 |----------|---------|
 | How many guests today/tomorrow? | `understory stats guests --period today` or `--period tomorrow` |
 | How many guests this week / next week? | `understory stats guests --period this-week` or `--period next-week` |
+| How many guests this weekend / next weekend? | `understory stats guests --period this-weekend` or `--period next-weekend` |
 | How many guests last month? | `understory stats guests --period last-month` |
 | How many visitors in [month]? | `understory stats guests --month 2026-02` |
 | How many booking transactions next week? | `understory stats bookings --period next-week` (slower) |
@@ -64,7 +65,7 @@ understory events next [--limit <n>] [--hours <n>]
 understory events get <eventId>
 ```
 - **events next**: Next upcoming events from now. Use for "when is our next event today?". Default: 5 events, 24h lookahead.
-- Use ISO 8601 for `--from` / `--to` (e.g. `2025-01-15T09:00:00`).
+- Use ISO 8601 for `--from` / `--to`. The CLI accepts any valid ISO 8601 (e.g. `2025-01-15T09:00:00`, `2026-02-21T00:00:00Z`, or `2026-02-21T00:00:00+01:00`) and normalizes to UTC for the API.
 
 ### Event Availability
 ```bash
@@ -113,9 +114,9 @@ understory stats busiest [--period today] [--month YYYY-MM] [--from] [--to]
 - **stats guests**: Total guest count (reserved capacity) for events in the range. Fast. Use for "how many guests tomorrow?", "how many people last month?", "how many visitors in February 2026?".
 - **stats bookings**: Count of booking transactions (excludes CANCELLED). Slower with large datasets.
 - **stats busiest**: Event/time slot with most guests in the range. Use for "busiest time slot today".
-- **--period**: `today` | `tomorrow` | `this-week` | `next-week` | `this-month` | `last-month`.
+- **--period**: `today` | `tomorrow` | `this-week` | `next-week` | `this-weekend` | `next-weekend` | `this-month` | `last-month`.
 - **--month**: Specific month, e.g. `2026-02` for February 2026.
-- **--from / --to**: Explicit ISO 8601 range (to is exclusive).
+- **--from / --to**: Explicit ISO 8601 range (to is exclusive). Accept any valid ISO 8601 (with or without timezone); the CLI normalizes to UTC for the API.
 
 Example output (stats guests):
 ```json

@@ -5,6 +5,7 @@
 
 import { Command } from "commander";
 import { apiGet } from "../client.js";
+import { normalizeDatetimeForApi } from "../datetime.js";
 import { writeOutput, type OutputOptions } from "../output.js";
 
 export function registerOrdersCommand(
@@ -28,17 +29,17 @@ export function registerOrdersCommand(
       "Sort: +created_at, -created_at, +updated_at, -updated_at"
     )
     .action(async (opts) => {
+      const params: Record<string, string | number | undefined> = {
+        cursor: opts.cursor,
+        limit: opts.limit,
+        sort: opts.sort,
+      };
+      if (opts.from) params.from = normalizeDatetimeForApi(opts.from);
+      if (opts.to) params.to = normalizeDatetimeForApi(opts.to);
+
       const data = await apiGet<{ next?: string; items: unknown[] }>(
         "/v1/orders",
-        {
-          params: {
-            from: opts.from,
-            to: opts.to,
-            cursor: opts.cursor,
-            limit: opts.limit,
-            sort: opts.sort,
-          },
-        }
+        { params }
       );
       writeOutput(data, getOutputOptions());
     });

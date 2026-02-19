@@ -5,6 +5,7 @@
 
 import { Command } from "commander";
 import { apiGet } from "../client.js";
+import { normalizeDatetimeForApi } from "../datetime.js";
 import { writeOutput, type OutputOptions } from "../output.js";
 
 /** Parse YYYY-MM to date range (first to last day of month). */
@@ -78,9 +79,27 @@ function resolvePeriod(period: string): { from: string; to: string } {
       to = new Date(now.getFullYear(), now.getMonth(), 1);
       break;
     }
+    case "this-weekend": {
+      const daysUntilSaturday = (6 - now.getDay() + 7) % 7;
+      from = new Date(now);
+      from.setDate(from.getDate() + daysUntilSaturday);
+      from.setHours(0, 0, 0, 0);
+      to = new Date(from);
+      to.setDate(to.getDate() + 2);
+      break;
+    }
+    case "next-weekend": {
+      const daysUntilSaturday = (6 - now.getDay() + 7) % 7;
+      from = new Date(now);
+      from.setDate(from.getDate() + daysUntilSaturday + 7);
+      from.setHours(0, 0, 0, 0);
+      to = new Date(from);
+      to.setDate(to.getDate() + 2);
+      break;
+    }
     default:
       throw new Error(
-        `Unknown period "${period}". Use: today, tomorrow, this-week, next-week, this-month, last-month`
+        `Unknown period "${period}". Use: today, tomorrow, this-week, next-week, this-weekend, next-weekend, this-month, last-month`
       );
   }
 
@@ -119,7 +138,7 @@ export function registerStatsCommand(
     .option("-t, --to <datetime>", "End of range (exclusive, ISO 8601)")
     .option(
       "-p, --period <period>",
-      "Shorthand: today | tomorrow | this-week | next-week | this-month | last-month"
+      "Shorthand: today | tomorrow | this-week | next-week | this-weekend | next-weekend | this-month | last-month"
     )
     .option(
       "-m, --month <YYYY-MM>",
@@ -138,8 +157,8 @@ export function registerStatsCommand(
         from = resolved.from;
         to = resolved.to;
       } else if (opts.from && opts.to) {
-        from = opts.from;
-        to = opts.to;
+        from = normalizeDatetimeForApi(opts.from);
+        to = normalizeDatetimeForApi(opts.to);
       } else {
         throw new Error(
           "Provide --period, --month <YYYY-MM>, or both --from and --to"
@@ -190,7 +209,7 @@ export function registerStatsCommand(
     .option("-t, --to <datetime>", "End of range (exclusive, ISO 8601)")
     .option(
       "-p, --period <period>",
-      "Shorthand: today | tomorrow | this-week | next-week | this-month | last-month"
+      "Shorthand: today | tomorrow | this-week | next-week | this-weekend | next-weekend | this-month | last-month"
     )
     .option("-m, --month <YYYY-MM>", "Specific month (e.g. 2026-02)")
     .action(async (opts) => {
@@ -206,8 +225,8 @@ export function registerStatsCommand(
         from = resolved.from;
         to = resolved.to;
       } else if (opts.from && opts.to) {
-        from = opts.from;
-        to = opts.to;
+        from = normalizeDatetimeForApi(opts.from);
+        to = normalizeDatetimeForApi(opts.to);
       } else {
         throw new Error(
           "Provide --period, --month <YYYY-MM>, or both --from and --to"
@@ -267,7 +286,7 @@ export function registerStatsCommand(
     .description("Busiest time slot in a date range (event with most guests)")
     .option(
       "-p, --period <period>",
-      "today | tomorrow | this-week | next-week (default: today)"
+      "today | tomorrow | this-week | next-week | this-weekend | next-weekend (default: today)"
     )
     .option("-m, --month <YYYY-MM>", "Specific month")
     .option("-f, --from <datetime>", "Start of range (with --to)")
@@ -285,8 +304,8 @@ export function registerStatsCommand(
         from = resolved.from;
         to = resolved.to;
       } else if (opts.from && opts.to) {
-        from = opts.from;
-        to = opts.to;
+        from = normalizeDatetimeForApi(opts.from);
+        to = normalizeDatetimeForApi(opts.to);
       } else {
         throw new Error("Provide --period, --month, or both --from and --to");
       }

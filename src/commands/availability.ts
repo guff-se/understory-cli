@@ -5,6 +5,7 @@
 
 import { Command } from "commander";
 import { apiGet } from "../client.js";
+import { normalizeDatetimeForApi } from "../datetime.js";
 import { writeOutput, type OutputOptions } from "../output.js";
 
 interface EventWithCapacity {
@@ -152,17 +153,17 @@ export function registerAvailabilityCommand(
     .option("-c, --cursor <cursor>", "Pagination cursor")
     .option("-l, --limit <n>", "Max items per page (default 50)", "50")
     .action(async (opts) => {
+      const params: Record<string, string | number | undefined> = {
+        experienceId: opts.experienceId,
+        cursor: opts.cursor,
+        limit: opts.limit,
+      };
+      if (opts.from) params.from = normalizeDatetimeForApi(opts.from);
+      if (opts.to) params.to = normalizeDatetimeForApi(opts.to);
+
       const data = await apiGet<{ next?: string; items?: unknown[] }>(
         "/v1/event-availabilities",
-        {
-          params: {
-            experienceId: opts.experienceId,
-            from: opts.from,
-            to: opts.to,
-            cursor: opts.cursor,
-            limit: opts.limit,
-          },
-        }
+        { params }
       );
       writeOutput(data, getOutputOptions());
     });
